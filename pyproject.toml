@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "weather-forecast"
+version = "0.1.0"
+description = ""
+authors = ["sonya <sonyakarm@icloud.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.2.1"
+psycopg2-binary = "^2.9.10"
+python-decouple = "^3.8"
+requests = "^2.32.3"
+pytest = "^8.3.5"
+djangorestframework = "^3.16.0"
+markdown = "^3.8"
+pytest-django = "^4.11.1"
+drf-spectacular = "^0.28.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest-django = "^4.11.1"
+black = "^25.1.0"
+flake8 = "^7.2.0"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+pythonpath = [
+    '.', 'src',
+]
+DJANGO_SETTINGS_MODULE = "settings.test"
+addopts = "--ds=settings.test --reuse-db"
+python_files = ["tests.py", "test_*.py"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

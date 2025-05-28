@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./src:/app/src
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

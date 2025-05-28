@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}API документация - Прогноз погоды{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const testInput = document.getElementById('apiTestInput');
+            const testButton = document.getElementById('apiTestButton');
+            const testResult = document.getElementById('apiTestResult');
+            const testCode = document.getElementById('apiTestCode');
+
+            function testAutocomplete() {
+                const query = testInput.value.trim();
+
+                if (query.length < 2) {
+                    alert('Введите минимум 2 символа');
+                    return;
+                }
+
+                testButton.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i>';
+                testButton.disabled = true;
+
+                fetch(`/api/v1/autocomplete/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        testCode.textContent = JSON.stringify(data, null, 2);
+                        testResult.style.display = 'block';
+                    })
+                    .catch(error => {
+                        testCode.textContent = `Ошибка: ${error.message}`;
+                        testResult.style.display = 'block';
+                    })
+                    .finally(() => {
+                        testButton.innerHTML = '<i class="bi bi-search"></i>';
+                        testButton.disabled = false;
+                    });
+            }
+
+            testButton.addEventListener('click', testAutocomplete);
+
+            testInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    testAutocomplete();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-4">
+                <i class="bi bi-code-slash me-2"></i>
+                API документация
+            </h1>
+
+            <!-- Overview -->
+            <div class="card weather-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Обзор API
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Наш сервис предоставляет простой REST API для получения статистики поиска погоды
+                        и истории пользователей. Все запросы возвращают данные в формате JSON.
+                    </p>
+                    <div class="alert alert-info">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Базовый URL:</strong> <code>{{ request.scheme }}://{{ request.get_host }}/api/v1/</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Endpoints -->
+            <div class="card weather-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul me-2"></i>
+                        Доступные endpoints
+                    </h5>
+                </div>
+                <div class="card-body">
+
+                    <!-- Weather Stats API -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">
+                            <i class="bi bi-graph-up me-2"></i>
+                            Статистика поиска городов
+                        </h6>
+                        <div class="bg-light p-3 rounded mb-2">
+                            <code class="text-dark">GET /api/v1/stats/</code>
+                        </div>
+                        <p>Возвращает список популярных городов с количеством поисков.</p>
+
+                        <strong>Пример ответа:</strong>
+                        <pre class="bg-dark text-light p-3 rounded mt-2"><code>{
+  "status": "success",
+  "popular_cities": [
+    {
+      "city": "Москва",
+      "country": "Россия",
+      "search_count": 15
+    },
+    {
+      "city": "Санкт-Петербург",
+      "country": "Россия",
+      "search_count": 8
+    }
+  ]
+}</code></pre>
+                    </div>
+
+                    <!-- User History API -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">
+                            <i class="bi bi-person me-2"></i>
+                            История поиска пользователя
+                        </h6>
+                        <div class="bg-light p-3 rounded mb-2">
+                            <code class="text-dark">GET /api/v1/user-history/</code>
+                        </div>
+                        <p>Возвращает историю поиска текущего пользователя (по сессии).</p>
+
+                        <strong>Пример ответа:</strong>
+                        <pre class="bg-dark text-light p-3 rounded mt-2"><code>{
+  "status": "success",
+  "history": [
+    {
+      "city": "Москва",
+      "country": "Россия",
+      "search_date": "2024-12-01T10:30:00Z",
+      "weather_data": {
+        "current": {
+          "temperature": -5.2,
+          "description": "Легкий снег"
+        }
+      }
+    }
+  ]
+}</code></pre>
+                    </div>
+
+                    <!-- Autocomplete API -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">
+                            <i class="bi bi-search me-2"></i>
+                            Автодополнение городов
+                        </h6>
+                        <div class="bg-light p-3 rounded mb-2">
+                            <code class="text-dark">GET /api/v1/autocomplete/?q={query}</code>
+                        </div>
+                        <p>Возвращает список предложений городов для автодополнения на основе Open-Meteo Geocoding
+                            API.</p>
+
+                        <strong>Параметры:</strong>
+                        <ul>
+                            <li><code>q</code> - поисковый запрос (минимум 2 символа)</li>
+                        </ul>
+
+                        <strong>Пример запроса:</strong>
+                        <div class="bg-light p-2 rounded mb-2">
+                            <code>GET /api/v1/autocomplete/?q=Моск</code>
+                        </div>
+
+                        <strong>Пример ответа:</strong>
+                        <pre class="bg-dark text-light p-3 rounded mt-2"><code>{
+  "suggestions": [
+    {
+      "value": "Москва",
+      "label": "Москва, Москва, Россия",
+      "source": "api",
+      "population": 12506000
+    },
+    {
+      "value": "Московский",
+      "label": "Московский, Московская область, Россия",
+      "source": "api",
+      "population": 72000
+    }
+  ]
+}</code></pre>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Особенности автодополнения:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li><code>source</code> - источник данных ("local" - из БД, "api" - из Open-Meteo)</li>
+                                <li><code>population</code> - население города (если доступно)</li>
+                                <li>Результаты сортируются по населению (крупные города первыми)</li>
+                                <li>Максимум 10 результатов в ответе</li>
+                                <li>Локальные города (из БД) показываются первыми</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Codes -->
+        <div class="card weather-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Коды ответов
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Код</th>
+                            <th>Статус</th>
+                            <th>Описание</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><span class="badge bg-success">200</span></td>
+                            <td>OK</td>
+                            <td>Запрос выполнен успешно</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-warning">400</span></td>
+                            <td>Bad Request</td>
+                            <td>Неверные параметры запроса</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-danger">500</span></td>
+                            <td>Internal Server Error</td>
+                            <td>Внутренняя ошибка сервера</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Format -->
+        <div class="card weather-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Формат ошибок
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>В случае ошибки API возвращает JSON с информацией об ошибке:</p>
+                <pre class="bg-dark text-light p-3 rounded"><code>{
+  "status": "error",
+  "message": "Описание ошибки"
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- Try It Out -->
+        <div class="card weather-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-play-circle me-2"></i>
+                    Попробовать API
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Вы можете протестировать API прямо сейчас:</p>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/api/v1/stats/" target="_blank" class="btn btn-primary">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Статистика городов
+                    </a>
+                    <a href="/api/v1/user-history/" target="_blank" class="btn btn-success">
+                        <i class="bi bi-person me-2"></i>
+                        Моя история
+                    </a>
+                    <a href="/api/v1/autocomplete/?q=Моск" target="_blank" class="btn btn-info">
+                        <i class="bi bi-search me-2"></i>
+                        Автодополнение
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="text-primary">Интерактивный тест автодополнения:</h6>
+                    <div class="input-group">
+                        <input type="text" id="apiTestInput" class="form-control"
+                               placeholder="Введите название города..." minlength="2">
+                        <button class="btn btn-outline-secondary" type="button" id="apiTestButton">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div id="apiTestResult" class="mt-2" style="display: none;">
+                        <small class="text-muted">Результат:</small>
+                        <pre class="bg-light p-2 rounded mt-1"><code id="apiTestCode"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
