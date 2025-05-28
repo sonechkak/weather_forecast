@@ -16,9 +16,11 @@ RUN touch README.md
 RUN poetry config virtualenvs.create false \
     && poetry install --only=main --no-interaction --no-ansi --no-root
 
-COPY src .
 
 RUN useradd -m myuser
 USER myuser
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+COPY src .
+COPY entrypoint.sh /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
