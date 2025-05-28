@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import Mock, patch
 import requests
 
-from apps.weather.services.weather_service import WeatherService
 from apps.weather.models import City, WeatherSearch
 
 

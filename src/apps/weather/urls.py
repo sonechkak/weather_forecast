@@ -1,12 +1,11 @@
 from django.urls import path, include
+
 from .views import (
     WeatherHomeView,
     WeatherHistoryView,
     AboutAPIView,
-    AutocompleteView,
     AboutSiteView
 )
-
 
 app_name = 'weather'
 

@@ -1,16 +1,15 @@
 import logging
+from urllib.parse import quote, unquote
 
 import requests
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from django.views.generic import TemplateView
-from urllib.parse import quote, unquote
 
+from .forms import WeatherSearchForm
 from .services.history_service import HistoryService
 from .services.weather_service import WeatherService
-from .forms import WeatherSearchForm
-
 
 logger = logging.getLogger(__name__)
 

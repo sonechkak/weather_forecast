@@ -1,8 +1,7 @@
 from django.http import JsonResponse
-from rest_framework import permissions
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
-from drf_spectacular.utils import extend_schema
 
 from apps.weather.services.history_service import HistoryService
 

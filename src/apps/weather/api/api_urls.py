@@ -12,7 +12,6 @@ from .api_views import (
 )
 from ..views import AutocompleteView
 
-
 app_name = "weather_api"
 
 
